@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
 export default async function Home() {
-  redirect("/student-advisor");
+  redirect("/login");
 }
 
