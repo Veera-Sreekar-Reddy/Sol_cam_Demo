@@ -1,8 +1,96 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { AUTH_ME_URL, CHATBOT_API_URL, ALL_STUDENTS_URL, getStudentByIdUrl } from "@/constants";
+
+// Function to parse markdown-like text and convert to React elements
+const parseMarkdown = (text: string): React.ReactNode[] => {
+  if (!text) return [text];
+
+  const lines = text.split('\n');
+  const result: React.ReactNode[] = [];
+  
+  lines.forEach((line, lineIndex) => {
+    // Check for headers (###)
+    if (line.trim().startsWith('###')) {
+      const headerText = line.replace(/^###\s*/, '');
+      const headerContent = parseBoldText(headerText);
+      result.push(
+        <h3 key={lineIndex} className="text-base font-bold mt-3 mb-2">
+          {headerContent}
+        </h3>
+      );
+      return;
+    }
+
+    // Check for list items (-)
+    if (line.trim().startsWith('-')) {
+      const listText = line.replace(/^-\s*/, '');
+      const listContent = parseBoldText(listText);
+      result.push(
+        <div key={lineIndex} className="flex items-start gap-2 my-1">
+          <span className="text-niftek-dark mt-1 flex-shrink-0">•</span>
+          <span>{listContent}</span>
+        </div>
+      );
+      return;
+    }
+
+    // Regular line with potential bold text
+    if (line.trim()) {
+      const lineContent = parseBoldText(line);
+      result.push(
+        <React.Fragment key={lineIndex}>
+          {lineIndex > 0 && <br />}
+          {lineContent}
+        </React.Fragment>
+      );
+    } else {
+      // Empty line
+      result.push(
+        <React.Fragment key={lineIndex}>
+          {lineIndex > 0 && <br />}
+          {'\u00A0'}
+        </React.Fragment>
+      );
+    }
+  });
+
+  return result;
+};
+
+// Helper function to parse bold text (**text**)
+const parseBoldText = (text: string): React.ReactNode[] => {
+  const parts: React.ReactNode[] = [];
+  const boldRegex = /\*\*(.*?)\*\*/g;
+  let lastIndex = 0;
+  let match;
+  let key = 0;
+
+  while ((match = boldRegex.exec(text)) !== null) {
+    // Add text before the bold
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    
+    // Add the bold text
+    parts.push(
+      <strong key={key++} className="font-semibold">
+        {match[1]}
+      </strong>
+    );
+    
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text after the last match
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : [text];
+};
 
 type Message = {
   role: "user" | "assistant";
@@ -261,6 +349,14 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const handleNewChat = () => {
+    setSelectedStudentId(null);
+    setSelectedStudentDetails(null);
+    setMessages([]);
+    setConversationState({});
+    setMessageInput("");
+  };
+
   const handleSendMessage = async () => {
     if (!messageInput.trim() || isSendingMessage || !selectedStudentId) return;
 
@@ -398,10 +494,10 @@ export default function ChatPage() {
   // Show loading state while verifying authentication
   if (isVerifyingAuth) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-black via-gray-950 to-black">
+      <div className="flex min-h-screen items-center justify-center bg-niftek-white">
         <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-red-500 border-r-transparent"></div>
-          <p className="text-gray-400">Verifying authentication...</p>
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-niftek-medium border-r-transparent"></div>
+          <p className="text-niftek-dark/70">Verifying authentication...</p>
         </div>
       </div>
     );
@@ -411,24 +507,24 @@ export default function ChatPage() {
   const displayStudent = selectedStudentDetails || selectedStudent;
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-black via-gray-950 to-black">
+    <div className="flex min-h-screen bg-niftek-white">
       {/* Sidebar */}
-      <aside className="sticky top-0 h-screen w-72 flex-shrink-0 border-r border-gray-800/50 bg-black/90 backdrop-blur-xl overflow-y-auto">
+      <aside className="sticky top-0 h-screen w-72 flex-shrink-0 border-r border-niftek-light bg-niftek-white overflow-y-auto">
         <div className="flex h-full flex-col">
-          <div className="border-b border-gray-800/50 px-4 py-4">
-            <h2 className="text-lg font-bold text-red-500">Students</h2>
-            <p className="mt-1 text-xs text-gray-400">
+          <div className="border-b border-niftek-light px-4 py-4">
+            <h2 className="text-lg font-bold text-niftek-dark">Students</h2>
+            <p className="mt-1 text-xs text-niftek-dark/70">
               {students.length} {students.length === 1 ? "student" : "students"}
           </p>
         </div>
           <div className="flex-1 overflow-y-auto px-2 py-2">
             {isLoadingStudents ? (
               <div className="flex items-center justify-center py-8">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-niftek-medium border-t-transparent"></div>
               </div>
             ) : students.length === 0 ? (
               <div className="py-8 text-center">
-                <p className="text-sm text-gray-500">No students found</p>
+                <p className="text-sm text-niftek-dark/70">No students found</p>
         </div>
             ) : (
               <div className="space-y-1">
@@ -445,18 +541,18 @@ export default function ChatPage() {
           onClick={() => {
                         setSelectedStudentId(student.id || null);
                       }}
-                      className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition ${
-                        selectedStudentId === student.id
-                          ? "bg-red-600/20 text-red-400 border border-red-600/30"
-                          : "text-gray-300 hover:bg-gray-800/50 hover:text-white"
-                      }`}
+                        className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                          selectedStudentId === student.id
+                            ? "bg-gray-200 text-niftek-dark border border-niftek-medium/40"
+                            : "text-niftek-dark hover:bg-niftek-offwhite hover:text-niftek-dark"
+                        }`}
                     >
                       <div className="flex items-center gap-2">
                         <div
                           className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
                             selectedStudentId === student.id
-                              ? "bg-red-600 text-white"
-                              : "bg-gray-700 text-gray-300"
+                              ? "bg-niftek-medium text-niftek-white"
+                              : "bg-niftek-light text-niftek-dark"
                           }`}
                         >
                           {initial}
@@ -466,7 +562,7 @@ export default function ChatPage() {
                             {fullName}
                           </span>
                           {grade && (
-                            <span className="text-xs text-gray-500 truncate block">
+                            <span className="text-xs text-niftek-dark/70 truncate block">
                               Grade {grade}
                             </span>
                           )}
@@ -478,29 +574,48 @@ export default function ChatPage() {
               </div>
             )}
           </div>
+          
+          {/* New Chat Button at Bottom */}
+          <div className="border-t border-niftek-light px-4 py-4">
+            <button
+              onClick={handleNewChat}
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-niftek-medium text-niftek-white hover:bg-niftek-medium/90 transition shadow-md hover:shadow-lg px-4 py-3"
+              aria-label="New Chat"
+              title="Start New Chat"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="text-sm font-medium">New Chat</span>
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col">
         {/* Header */}
-        <header className="sticky top-0 z-10 border-b border-gray-800/50 bg-black/90 backdrop-blur-xl px-4 py-4 shadow-lg">
+        <header className="sticky top-0 z-10 border-b border-niftek-light bg-niftek-white px-4 py-4 shadow-sm">
           <div className="mx-auto flex max-w-4xl items-center justify-between">
           <div>
-              <h1 className="text-xl font-bold text-red-500">AI Chat Assistant</h1>
-              {displayStudent && (
-                <p className="mt-1 text-sm text-gray-400">
-                  Chatting with: {
+              <h1 className="text-xl font-bold text-niftek-dark">AI Advisor Assistant</h1>
+              {displayStudent ? (
+                <p className="mt-1 text-sm text-niftek-dark/70">
+                  About: {
                     displayStudent.first_name && displayStudent.last_name
                       ? `${displayStudent.first_name} ${displayStudent.last_name}`
                       : displayStudent.name || "Student"
                   }
                 </p>
+              ) : (
+                <p className="mt-1 text-sm text-niftek-dark/70">
+                  Start a new conversation 
+                </p>
               )}
           </div>
             <button
               onClick={handleLogout}
-              className="rounded-lg border border-gray-700/50 bg-gray-900/50 px-4 py-2 text-sm font-medium text-gray-300 transition hover:bg-gray-800/50 hover:text-red-400"
+              className="rounded-lg border border-niftek-light bg-niftek-white px-4 py-2 text-sm font-medium text-niftek-dark transition hover:bg-niftek-offwhite hover:text-niftek-medium"
             >
               Logout
             </button>
@@ -508,18 +623,18 @@ export default function ChatPage() {
         </header>
 
         {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="flex-1 overflow-y-auto bg-niftek-white px-4 py-6">
           <div className="mx-auto max-w-4xl space-y-4">
           {isLoadingStudentDetails ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-solid border-red-500 border-r-transparent"></div>
-              <p className="text-sm text-gray-400">Loading student information...</p>
+              <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-solid border-niftek-medium border-r-transparent"></div>
+              <p className="text-sm text-niftek-dark/70">Loading student information...</p>
             </div>
           ) : messages.length === 0 && !isLoadingStudentDetails ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="mb-4 rounded-full bg-red-600/20 p-4">
+              <div className="mb-4 rounded-full bg-niftek-light/50 p-4">
                 <svg
-                  className="h-8 w-8 text-red-500"
+                  className="h-8 w-8 text-niftek-medium"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -532,10 +647,10 @@ export default function ChatPage() {
                   />
                 </svg>
               </div>
-              <h2 className="mb-2 text-xl font-semibold text-white">
+              <h2 className="mb-2 text-xl font-semibold text-niftek-dark">
                 Start a conversation
               </h2>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-niftek-dark/70">
                 Ask me anything and I'll help you out
               </p>
             </div>
@@ -553,21 +668,21 @@ export default function ChatPage() {
               <div
                 className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                   message.role === "user"
-                    ? "bg-red-600 text-white"
-                    : "bg-gray-800/50 text-gray-100 border border-gray-700/50"
+                    ? "bg-niftek-medium text-niftek-white"
+                    : "bg-niftek-offwhite text-niftek-dark border border-niftek-light"
                 }`}
               >
                 <p className="text-xs font-semibold mb-1 opacity-80">
                   {message.role === "user" ? "Advisor" : "AI Assistant"}
                 </p>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                  {message.content}
-                </p>
+                <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                  {message.role === "assistant" ? parseMarkdown(message.content) : message.content}
+                </div>
                 <p
                   className={`mt-1 text-xs ${
                     message.role === "user"
-                      ? "text-red-100"
-                      : "text-gray-400"
+                      ? "text-niftek-white/80"
+                      : "text-niftek-dark/70"
                   }`}
                 >
                   {message.timestamp}
@@ -578,15 +693,15 @@ export default function ChatPage() {
 
           {isSendingMessage && (
             <div className="flex justify-start">
-              <div className="rounded-2xl bg-gray-800/50 border border-gray-700/50 px-4 py-3">
+              <div className="rounded-2xl bg-niftek-offwhite border border-niftek-light px-4 py-3">
                 <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 animate-pulse rounded-full bg-gray-400"></div>
+                  <div className="h-2 w-2 animate-pulse rounded-full bg-niftek-medium"></div>
                   <div
-                    className="h-2 w-2 animate-pulse rounded-full bg-gray-400"
+                    className="h-2 w-2 animate-pulse rounded-full bg-niftek-medium"
                     style={{ animationDelay: "0.2s" }}
                   ></div>
                   <div
-                    className="h-2 w-2 animate-pulse rounded-full bg-gray-400"
+                    className="h-2 w-2 animate-pulse rounded-full bg-niftek-medium"
                     style={{ animationDelay: "0.4s" }}
                   ></div>
           </div>
@@ -599,7 +714,7 @@ export default function ChatPage() {
         </div>
 
         {/* Input Area */}
-        <footer className="sticky bottom-0 border-t border-gray-800/50 bg-black/90 backdrop-blur-xl px-4 py-4">
+        <footer className="sticky bottom-0 border-t border-niftek-light bg-niftek-white px-4 py-4">
           <div className="mx-auto max-w-4xl">
           <div className="flex gap-3">
             <textarea
@@ -618,14 +733,14 @@ export default function ChatPage() {
                 }
               }}
               placeholder="Type your message..."
-              className="flex-1 resize-none rounded-xl border border-gray-700/50 bg-gray-900/50 px-4 py-3 text-sm text-white placeholder:text-gray-500 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30"
+              className="flex-1 resize-none rounded-xl border border-niftek-light bg-niftek-white px-4 py-3 text-sm text-niftek-dark placeholder:text-niftek-dark/50 focus:border-niftek-medium focus:outline-none focus:ring-2 focus:ring-niftek-medium/30"
               disabled={isSendingMessage}
             />
               <button
               type="button"
               onClick={handleSendMessage}
               disabled={!messageInput.trim() || isSendingMessage}
-              className="rounded-xl bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-red-600/30 transition hover:bg-red-700 hover:shadow-xl hover:shadow-red-600/40 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl bg-niftek-medium px-6 py-3 text-sm font-semibold text-niftek-white shadow-lg shadow-niftek-medium/30 transition hover:bg-niftek-medium/90 hover:shadow-xl hover:shadow-niftek-medium/40 focus:outline-none focus:ring-2 focus:ring-niftek-medium focus:ring-offset-2 focus:ring-offset-niftek-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSendingMessage ? (
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>

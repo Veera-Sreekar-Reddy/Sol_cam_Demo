@@ -78,14 +78,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-black via-gray-950 to-black px-4">
+    <div className="flex min-h-screen items-center justify-center bg-niftek-white px-4">
       <div className="w-full max-w-md">
-        <div className="rounded-2xl border border-gray-700/50 bg-gradient-to-br from-gray-900/95 to-black/95 p-8 shadow-2xl shadow-red-900/20">
+        <div className="rounded-2xl border border-niftek-light bg-niftek-white p-8 shadow-lg shadow-niftek-light/20">
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-red-500">
+            <h1 className="text-3xl font-bold text-niftek-dark">
               Student Advisor Portal
             </h1>
-            <p className="mt-2 text-sm text-gray-400">
+            <p className="mt-2 text-sm text-niftek-dark/70">
               Sign in to access the AI-powered advising system
             </p>
           </div>
@@ -94,7 +94,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-300"
+                className="block text-sm font-medium text-niftek-dark"
               >
                 Email Address
               </label>
@@ -104,7 +104,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="mt-2 w-full rounded-lg border border-gray-700/50 bg-gray-900/50 px-4 py-3 text-sm text-white placeholder:text-gray-500 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30"
+                className="mt-2 w-full rounded-lg border border-niftek-light bg-niftek-white px-4 py-3 text-sm text-niftek-dark placeholder:text-niftek-dark/50 focus:border-niftek-medium focus:outline-none focus:ring-2 focus:ring-niftek-medium/30"
                 placeholder="Enter your email"
                 disabled={isLoading}
               />
@@ -113,7 +113,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-300"
+                className="block text-sm font-medium text-niftek-dark"
               >
                 Password
               </label>
@@ -123,14 +123,14 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="mt-2 w-full rounded-lg border border-gray-700/50 bg-gray-900/50 px-4 py-3 text-sm text-white placeholder:text-gray-500 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30"
+                className="mt-2 w-full rounded-lg border border-niftek-light bg-niftek-white px-4 py-3 text-sm text-niftek-dark placeholder:text-niftek-dark/50 focus:border-niftek-medium focus:outline-none focus:ring-2 focus:ring-niftek-medium/30"
                 placeholder="Enter your password"
                 disabled={isLoading}
               />
             </div>
 
             {error && (
-              <div className="rounded-lg border border-red-900/50 bg-red-950/30 p-3 text-sm text-red-400">
+              <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-600">
                 {error}
               </div>
             )}
@@ -138,7 +138,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full rounded-lg bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-xl shadow-red-600/30 transition hover:bg-red-700 hover:shadow-2xl hover:shadow-red-600/40 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50 ring-1 ring-white/10"
+              className="w-full rounded-lg bg-niftek-medium px-4 py-3 text-sm font-semibold text-niftek-white shadow-lg shadow-niftek-medium/30 transition hover:bg-niftek-medium/90 hover:shadow-xl hover:shadow-niftek-medium/40 focus:outline-none focus:ring-2 focus:ring-niftek-medium focus:ring-offset-2 focus:ring-offset-niftek-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isLoading ? "Signing in..." : "Sign In"}
             </button>
@@ -146,7 +146,7 @@ export default function LoginPage() {
 
         </div>
 
-        <p className="mt-6 text-center text-xs text-gray-500">
+        <p className="mt-6 text-center text-xs text-niftek-dark/70">
           Secure access for authorized academic advisors only
         </p>
       </div>

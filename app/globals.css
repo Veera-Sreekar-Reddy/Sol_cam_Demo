@@ -2,8 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: light;
+@layer base {
+  :root {
+    --niftek-dark: #2b6777;
+    --niftek-light: #c8d8e4;
+    --niftek-medium: #52ab98;
+    --niftek-offwhite: #f2f2f2;
+    --niftek-white: #ffffff;
+    color-scheme: light;
+  }
 }
 
 body {

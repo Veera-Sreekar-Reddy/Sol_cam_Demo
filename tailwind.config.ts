@@ -8,7 +8,17 @@ const config: Config = {
     "./src/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
-    extend: {}
+    extend: {
+      colors: {
+        niftek: {
+          dark: "var(--niftek-dark)",
+          light: "var(--niftek-light)",
+          medium: "var(--niftek-medium)",
+          offwhite: "var(--niftek-offwhite)",
+          white: "var(--niftek-white)",
+        }
+      }
+    }
   },
   plugins: []
 };
